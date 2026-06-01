@@ -1,0 +1,1867 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campo Minado Premium</title>
+    <!-- Importando fontes modernas -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <!-- FontAwesome para ícones premium -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at top, #1e293b, #0f172a);
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-primary: #10b981; /* Verde esmeralda */
+            --accent-primary-hover: #059669;
+            --accent-danger: #ef4444;
+            --accent-warning: #f59e0b;
+            --cell-unrevealed: #334155;
+            --cell-unrevealed-hover: #475569;
+            --cell-revealed: #1e293b;
+            --shadow-premium: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        /* Cores dos números dos vizinhos */
+        --num-1: #3b82f6; /* Azul */
+        --num-2: #10b981; /* Verde */
+        --num-3: #ef4444; /* Vermelho */
+        --num-4: #8b5cf6; /* Roxo */
+        --num-5: #f59e0b; /* Laranja */
+        --num-6: #06b6d4; /* Ciano */
+        --num-7: #ec4899; /* Rosa */
+        --num-8: #f43f5e; /* Coral */
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        /* Container Principal com Efeito Glass */
+        .app-container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: var(--shadow-premium);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        /* TELA INICIAL / MENU */
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Logo e Títulos */
+        .logo-area {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-icon {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, #34d399, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+            display: inline-block;
+            filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.3));
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+            background: linear-gradient(to right, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Destaque: Melhor Jogada Absoluta */
+        .absolute-best-container {
+            width: 100%;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.03) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            box-shadow: 0 8px 32px rgba(245, 158, 11, 0.1);
+            border-radius: 18px;
+            padding: 16px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .absolute-best-container::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, transparent 60%);
+            animation: pulseGlow 4s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.5; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        .best-badge-icon {
+            font-size: 2.4rem;
+            color: #f59e0b;
+            filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.6));
+            animation: crownFloat 3s infinite ease-in-out;
+        }
+
+        @keyframes crownFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-4px) rotate(4deg); }
+        }
+
+        .best-info {
+            flex: 1;
+            z-index: 2;
+        }
+
+        .best-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: var(--accent-warning);
+            letter-spacing: 1.5px;
+            margin-bottom: 4px;
+        }
+
+        .best-value {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .best-details {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 12px;
+        }
+
+        .best-details span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Dificuldades */
+        .difficulty-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn-difficulty {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px 20px;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .btn-difficulty:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+
+        .diff-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .diff-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .diff-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .diff-badge {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .badge-facil { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .badge-medio { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .badge-dificil { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+        /* Painel de Estatísticas e Líderes na Home */
+        .stats-panel {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 8px;
+        }
+
+        .stats-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .wins-counter {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 12px;
+            border-radius: 12px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .wins-counter span {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Abas dos líderes */
+        .stats-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-primary);
+            color: #0f172a;
+            border-color: var(--accent-primary);
+        }
+
+        /* Lista de Recordes TOP 3 */
+        .records-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 180px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .records-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .records-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .record-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            font-size: 0.9rem;
+        }
+
+        .record-rank {
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+        }
+
+        .rank-1 { color: #f59e0b; } /* Ouro */
+        .rank-2 { color: #cbd5e1; } /* Prata */
+        .rank-3 { color: #b45309; } /* Bronze */
+
+        .record-time {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Badges de Dificuldade e Status no Histórico */
+        .history-meta {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .hist-status-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+        .status-win { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .status-lose { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+        .hist-diff-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+        }
+
+        .no-records {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        /* TELA DO JOGO */
+        .game-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .hud-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .hud-icon {
+            color: var(--accent-primary);
+            font-size: 1.1rem;
+        }
+
+        .hud-icon.flag {
+            color: var(--accent-warning);
+        }
+
+        .hud-icon.points {
+            color: #f59e0b;
+            filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.4));
+        }
+
+        .hud-val {
+            font-family: var(--font-mono);
+            font-size: 1.25rem;
+            font-weight: 700;
+            min-width: 45px;
+        }
+
+        /* Botão de Reinício Premium */
+        .btn-smiley {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--accent-warning);
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-smiley:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-smiley:active {
+            transform: scale(0.9);
+        }
+
+        .btn-smiley i {
+            transition: transform 0.4s ease;
+        }
+
+        .btn-smiley:hover i {
+            transform: rotate(-180deg);
+        }
+
+        /* Estados de Cores do Botão de Reset */
+        .btn-smiley.playing {
+            color: var(--accent-warning);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-smiley.won {
+            color: var(--accent-primary);
+            border-color: rgba(16, 185, 129, 0.4);
+            animation: pulseSuccess 1.5s infinite;
+        }
+
+        .btn-smiley.lost {
+            color: var(--accent-danger);
+            border-color: rgba(239, 68, 68, 0.4);
+            animation: pulseDanger 1.5s infinite;
+        }
+
+        @keyframes pulseSuccess {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 0 12px 4px rgba(16, 185, 129, 0.2); }
+        }
+
+        @keyframes pulseDanger {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 12px 4px rgba(239, 68, 68, 0.2); }
+        }
+
+        /* ÁREA DO TABULEIRO */
+        .board-outer {
+            width: 100%;
+            max-height: 70vh;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 16px;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        /* Customizando a barra de rolagem */
+        .board-outer::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .board-outer::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .board-outer::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        .board-outer::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .mines-board {
+            display: grid;
+            gap: 4px;
+            width: fit-content;
+            margin: 0 auto;
+        }
+
+        /* Desativa cliques, toques e efeitos de hover quando o jogo acaba */
+        .mines-board.game-over .cell {
+            pointer-events: none !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* CÉLULA DO TABULEIRO */
+        .cell {
+            width: var(--cell-size, 40px);
+            height: var(--cell-size, 40px);
+            background-color: var(--cell-unrevealed);
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 800;
+            font-size: calc(var(--cell-size, 40px) * 0.45);
+            cursor: pointer;
+            transition: all 0.15s ease, background-color 0.1s;
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.05), 
+                        0 2px 4px rgba(0,0,0,0.15);
+            position: relative;
+            transform-style: preserve-3d;
+            perspective: 500px;
+        }
+
+        /* Hover no estado não revelado */
+        .cell:not(.revealed):hover {
+            background-color: var(--cell-unrevealed-hover);
+            transform: scale(1.08);
+            z-index: 2;
+        }
+
+        .cell:active:not(.revealed) {
+            transform: scale(0.92);
+        }
+
+        /* Célula Revelada */
+        .cell.revealed {
+            background-color: var(--cell-revealed);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+            cursor: default;
+        }
+
+        /* Estilos dos Números */
+        .cell[data-neighbors="1"] { color: var(--num-1); }
+        .cell[data-neighbors="2"] { color: var(--num-2); }
+        .cell[data-neighbors="3"] { color: var(--num-3); }
+        .cell[data-neighbors="4"] { color: var(--num-4); }
+        .cell[data-neighbors="5"] { color: var(--num-5); }
+        .cell[data-neighbors="6"] { color: var(--num-6); }
+        .cell[data-neighbors="7"] { color: var(--num-7); }
+        .cell[data-neighbors="8"] { color: var(--num-8); }
+
+        /* Minas e Bandeiras */
+        .cell.mine {
+            background-color: var(--accent-danger);
+            color: white;
+        }
+
+        .cell.mine-triggered {
+            background-color: #ff3333;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+            z-index: 3;
+        }
+
+        .cell.flagged {
+            animation: flagPlant 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .cell.flagged i {
+            color: var(--accent-warning);
+            filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.3));
+        }
+
+        @keyframes flagPlant {
+            0% { transform: scale(0.5) rotate(-30deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        /* Botões de Rodapé e Controles */
+        .controls-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        /* MODAIS / OVERLAYS DE VITÓRIA E DERROTA */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 24px;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            width: 85%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            animation: modalScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes modalScaleUp {
+            to { transform: scale(1); }
+        }
+
+        .modal-icon {
+            font-size: 3.5rem;
+            margin-bottom: 16px;
+        }
+
+        .modal-icon.victory {
+            color: var(--accent-primary);
+            filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.4));
+        }
+
+        .modal-icon.defeat {
+            color: var(--accent-danger);
+            filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.4));
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .modal-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+        }
+
+        .modal-stats {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 24px;
+            gap: 8px;
+        }
+
+        .modal-stat-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .modal-stat-val {
+            font-family: var(--font-mono);
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .modal-stat-lbl {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Alinhamento de botões do Modal */
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .btn-action {
+            background: var(--accent-primary);
+            border: none;
+            color: #0f172a;
+            font-weight: 700;
+            padding: 14px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            flex: 1.3;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-action:hover {
+            background: var(--accent-primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-action:active {
+            transform: translateY(0);
+        }
+
+        .btn-view-board {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            font-weight: 600;
+            padding: 14px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            flex: 1;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-view-board:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Responsividade Extrema */
+        @media (max-width: 480px) {
+            .app-container {
+                padding: 16px;
+                border-radius: 16px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .logo-icon {
+                font-size: 2.8rem;
+            }
+
+            .game-header {
+                padding: 10px 14px;
+                justify-content: center;
+            }
+
+            .hud-val {
+                font-size: 1.1rem;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- TELA INICIAL -->
+        <div id="homeScreen" class="screen active">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fa-solid fa-bomb"></i></div>
+                <h1>Campo Minado</h1>
+                <p class="subtitle">Desafie sua mente e evite as explosões</p>
+            </div>
+
+            <!-- Destaque: Melhor Jogada Absoluta de Todas -->
+            <div id="absoluteBestCard" class="absolute-best-container">
+                <div class="best-badge-icon"><i class="fa-solid fa-crown"></i></div>
+                <div class="best-info">
+                    <div class="best-title">Melhor Jogada Histórica</div>
+                    <div id="bestRecordScore" class="best-value">Nenhum recorde absoluto ainda</div>
+                    <div id="bestRecordMeta" class="best-details" style="display: none;">
+                        <span><i class="fa-solid fa-layer-group"></i> <strong id="bestRecordDiff">Fácil</strong></span>
+                        <span><i class="fa-solid fa-stopwatch"></i> <strong id="bestRecordTime">0s</strong></span>
+                        <span><i class="fa-solid fa-calendar-day"></i> <strong id="bestRecordDate">--/--/--</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel de Estatísticas com Líderes TOP 3 e Pontuação Acumulada -->
+            <div class="stats-panel">
+                <div class="stats-header">
+                    <div class="stats-title"><i class="fa-solid fa-trophy"></i> Painel de Líderes</div>
+                    <div class="wins-counter" title="Total de vitórias e pontos acumulados">
+                        Vitórias: <span id="statWins">0</span> | Pontos: <span id="statTotalPoints">0</span>
+                    </div>
+                </div>
+
+                <!-- Abas para alternar os níveis das melhores jogadas ou histórico -->
+                <div class="stats-tabs">
+                    <button class="tab-btn active" data-tab="easy">Fácil</button>
+                    <button class="tab-btn" data-tab="medium">Médio</button>
+                    <button class="tab-btn" data-tab="hard">Difícil</button>
+                    <button class="tab-btn" data-tab="history" style="background: rgba(16, 185, 129, 0.05); color: #34d399; border-color: rgba(16, 185, 129, 0.1);">Histórico</button>
+                </div>
+
+                <!-- Lista dinâmica de recordes ou partidas jogadas -->
+                <div id="recordsContainer" class="records-list">
+                    <!-- Gerado dinamicamente via JS -->
+                </div>
+            </div>
+
+            <!-- Seleção de Dificuldades -->
+            <div class="difficulty-container">
+                <button class="btn-difficulty" data-difficulty="easy">
+                    <div class="diff-info">
+                        <span class="diff-title">Fácil</span>
+                        <span class="diff-desc">Grade 8x8 — 10 minas</span>
+                    </div>
+                    <span class="diff-badge badge-facil">Iniciante</span>
+                </button>
+                <button class="btn-difficulty" data-difficulty="medium">
+                    <div class="diff-info">
+                        <span class="diff-title">Médio</span>
+                        <span class="diff-desc">Grade 14x14 — 30 minas</span>
+                    </div>
+                    <span class="diff-badge badge-medio">Intermediário</span>
+                </button>
+                <button class="btn-difficulty" data-difficulty="hard">
+                    <div class="diff-info">
+                        <span class="diff-title">Difícil</span>
+                        <span class="diff-desc">Grade 18x18 — 60 minas</span>
+                    </div>
+                    <span class="diff-badge badge-dificil">Especialista</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TELA DO JOGO -->
+        <div id="gameScreen" class="screen">
+            <!-- HUD Superior -->
+            <div class="game-header">
+                <div class="hud-item" title="Minas restantes">
+                    <i class="fa-solid fa-flag hud-icon flag"></i>
+                    <span id="minesCounter" class="hud-val">000</span>
+                </div>
+
+                <!-- Nova seção de Pontos em Tempo Real -->
+                <div class="hud-item" title="Sua Pontuação atual">
+                    <i class="fa-solid fa-star hud-icon points"></i>
+                    <span id="pointsCounter" class="hud-val">0000</span>
+                </div>
+                
+                <!-- Botão de reinício estilizado -->
+                <button id="btnReset" class="btn-smiley playing" title="Reiniciar partida">
+                    <i class="fa-solid fa-arrow-rotate-right" id="smileyIcon"></i>
+                </button>
+                
+                <div class="hud-item" title="Tempo decorrido">
+                    <i class="fa-solid fa-stopwatch hud-icon"></i>
+                    <span id="timerCounter" class="hud-val">000</span>
+                </div>
+            </div>
+
+            <!-- Tabuleiro Dinâmico -->
+            <div class="board-outer">
+                <div id="board" class="mines-board"></div>
+            </div>
+
+            <!-- Controles de Rodapé -->
+            <div class="controls-footer">
+                <button id="btnBack" class="btn-secondary" title="Voltar ao menu inicial">
+                    <i class="fa-solid fa-arrow-left-long"></i> Menu Principal
+                </button>
+                <!-- Botão premium flutuante para reexibir resultados se fechar o modal -->
+                <button id="btnShowResults" class="btn-secondary" style="display: none; background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3);" title="Reabrir tela de resultados">
+                    <i class="fa-solid fa-trophy"></i> Ver Resultados
+                </button>
+                <button id="btnSoundToggle" class="btn-secondary" title="Ativar/Desativar Sons">
+                    <i class="fa-solid fa-volume-high"></i> Som
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL OVERLAY (VITÓRIA / DERROTA) -->
+        <div id="modalOverlay" class="modal-overlay">
+            <div class="modal-card">
+                <div id="modalIcon" class="modal-icon victory">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <h2 id="modalTitle" class="modal-title">Você Venceu!</h2>
+                <p id="modalDesc" class="modal-desc">Incrível! Você limpou o campo com maestria.</p>
+                
+                <div class="modal-stats">
+                    <div class="modal-stat-box">
+                        <span class="modal-stat-val" id="modalStatTime">--</span>
+                        <span class="modal-stat-lbl">Tempo</span>
+                    </div>
+                    <div class="modal-stat-box">
+                        <span class="modal-stat-val" id="modalStatPoints" style="color: #fbbf24;">--</span>
+                        <span class="modal-stat-lbl">Pontuação</span>
+                    </div>
+                    <div class="modal-stat-box">
+                        <span class="modal-stat-val" id="modalStatBest">--</span>
+                        <span class="modal-stat-lbl">Recorde Nível</span>
+                    </div>
+                </div>
+
+                <!-- Estrutura de Botões Lado a Lado -->
+                <div class="modal-buttons">
+                    <button id="btnModalAction" class="btn-action">
+                        <i class="fa-solid fa-rotate-left"></i> Jogar Novamente
+                    </button>
+                    <button id="btnViewBoard" class="btn-view-board" title="Ver como o campo ficou">
+                        <i class="fa-solid fa-eye"></i> Ver Campo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- AUDIO ENGINE (Web Audio API) -->
+    <script>
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            play(type) {
+                if (!this.enabled) return;
+                this.init();
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+
+                switch (type) {
+                    case 'click':
+                        this.triggerClick();
+                        break;
+                    case 'flag':
+                        this.triggerFlag();
+                        break;
+                    case 'reveal-empty':
+                        this.triggerRevealEmpty();
+                        break;
+                    case 'explode':
+                        this.triggerExplode();
+                        break;
+                    case 'win':
+                        this.triggerWin();
+                        break;
+                    case 'lose':
+                        this.triggerLose();
+                        break;
+                }
+            }
+
+            triggerClick() {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(300, this.ctx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.06);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.06);
+            }
+
+            triggerFlag() {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(660, this.ctx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.16);
+            }
+
+            triggerRevealEmpty() {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(250, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(150, this.ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.12);
+            }
+
+            triggerExplode() {
+                const bufferSize = this.ctx.sampleRate * 0.4;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(800, this.ctx.currentTime);
+                filter.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 0.35);
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.38);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start();
+                noise.stop(this.ctx.currentTime + 0.4);
+            }
+
+            triggerWin() {
+                const notes = [261.63, 329.63, 392.00, 523.25];
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.1);
+                    gain.gain.setValueAtTime(0, this.ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.12, this.ctx.currentTime + idx * 0.1 + 0.05);
+                    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.1 + 0.4);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + idx * 0.1 + 0.45);
+                });
+            }
+
+            triggerLose() {
+                const notes = [220.00, 207.65, 196.00, 164.81];
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.12);
+                    gain.gain.setValueAtTime(0, this.ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.08, this.ctx.currentTime + idx * 0.12 + 0.05);
+                    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.12 + 0.5);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + idx * 0.12 + 0.55);
+                });
+            }
+        }
+
+        const sound = new SoundEngine();
+    </script>
+
+    <!-- CORE GAME SCRIPT -->
+    <script>
+        // --- 1. CLASSE CELL (Representação de cada quadradinho) ---
+        class Cell {
+            constructor(row, col, size = 40) {
+                this.row = row;
+                this.col = col;
+                this.hasMine = false;
+                this.isRevealed = false;
+                this.isFlagged = false;
+                this.neighborMines = 0;
+                this.element = null;
+                this.size = size;
+            }
+
+            // Cria e associa o elemento visual
+            render(onClick, onRightClick) {
+                const el = document.createElement('div');
+                el.classList.add('cell');
+                el.style.setProperty('--cell-size', `${this.size}px`);
+                el.dataset.row = this.row;
+                el.dataset.col = this.col;
+
+                // Registro de cliques
+                el.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    onClick(this);
+                });
+
+                el.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    onRightClick(this);
+                });
+
+                // Suporte para toques mobile de forma fluida
+                let touchStartTime = 0;
+                el.addEventListener('touchstart', (e) => {
+                    touchStartTime = Date.now();
+                }, { passive: true });
+
+                el.addEventListener('touchend', (e) => {
+                    const touchDuration = Date.now() - touchStartTime;
+                    if (touchDuration > 450) { // Toque longo = Colocar bandeira
+                        e.preventDefault();
+                        onRightClick(this);
+                    }
+                });
+
+                this.element = el;
+                return el;
+            }
+
+            // Atualiza a representação visual com base no estado atual da célula
+            updateDOM() {
+                if (!this.element) return;
+
+                // Reset de classes mantendo o tamanho das células
+                this.element.className = 'cell';
+                this.element.innerHTML = '';
+                this.element.removeAttribute('data-neighbors');
+
+                if (this.isRevealed) {
+                    this.element.classList.add('revealed');
+                    if (this.hasMine) {
+                        this.element.classList.add('mine');
+                        this.element.innerHTML = '<i class="fa-solid fa-bomb"></i>';
+                    } else if (this.neighborMines > 0) {
+                        this.element.dataset.neighbors = this.neighborMines;
+                        this.element.textContent = this.neighborMines;
+                    }
+                } else if (this.isFlagged) {
+                    this.element.classList.add('flagged');
+                    this.element.innerHTML = '<i class="fa-solid fa-flag"></i>';
+                }
+            }
+        }
+
+        // --- 2. CLASSE BOARD (Estrutura física do tabuleiro) ---
+        class Board {
+            constructor(rows, cols, mineCount, cellSize, onCellClick, onCellRightClick) {
+                this.rows = rows;
+                this.cols = cols;
+                this.mineCount = mineCount;
+                this.cellSize = cellSize;
+                this.onCellClick = onCellClick;
+                this.onCellRightClick = onCellRightClick;
+                
+                this.cells = [];
+                this.minesPlaced = false;
+
+                this.generateGrid();
+            }
+
+            // Inicializa a matriz lógica bidimensional de objetos Cell
+            generateGrid() {
+                this.cells = [];
+                for (let r = 0; r < this.rows; r++) {
+                    const rowArray = [];
+                    for (let c = 0; c < this.cols; c++) {
+                        rowArray.push(new Cell(r, c, this.cellSize));
+                    }
+                    this.cells.push(rowArray);
+                }
+            }
+
+            // Gera minas após o primeiro clique (garante que o local clicado e seus adjacentes imediatos estejam livres)
+            placeMines(firstRow, firstCol) {
+                let placed = 0;
+                while (placed < this.mineCount) {
+                    const r = Math.floor(Math.random() * this.rows);
+                    const c = Math.floor(Math.random() * this.cols);
+
+                    // Evita o primeiro clique e seus vizinhos imediatos
+                    const isTooClose = Math.abs(r - firstRow) <= 1 && Math.abs(c - firstCol) <= 1;
+
+                    if (!this.cells[r][c].hasMine && !isTooClose) {
+                        this.cells[r][c].hasMine = true;
+                        placed++;
+                    }
+                }
+
+                this.calculateNeighbors();
+                this.minesPlaced = true;
+            }
+
+            // Calcula o número de minas adjacentes para cada célula do tabuleiro
+            calculateNeighbors() {
+                for (let r = 0; r < this.rows; r++) {
+                    for (let c = 0; c < this.cols; c++) {
+                        const cell = this.cells[r][c];
+                        if (cell.hasMine) continue;
+
+                        let count = 0;
+                        const neighbors = this.getNeighbors(r, c);
+                        neighbors.forEach(neighbor => {
+                            if (neighbor.hasMine) count++;
+                        });
+                        cell.neighborMines = count;
+                    }
+                }
+            }
+
+            // Retorna lista de células vizinhas válidas (incluindo diagonais)
+            getNeighbors(row, col) {
+                const list = [];
+                for (let dr = -1; dr <= 1; dr++) {
+                    for (let dc = -1; dc <= 1; dc++) {
+                        if (dr === 0 && dc === 0) continue;
+                        const nr = row + dr;
+                        const nc = col + dc;
+                        if (nr >= 0 && nr < this.rows && nc >= 0 && nc < this.cols) {
+                            list.push(this.cells[nr][nc]);
+                        }
+                    }
+                }
+                return list;
+            }
+
+            // Revelação recursiva com Flood Fill (Expansão do espaço vazio) - Retorna número de células abertas nesta iteração
+            revealCellRecursive(row, col) {
+                const cell = this.cells[row][col];
+                if (cell.isRevealed || cell.isFlagged) return 0;
+
+                cell.isRevealed = true;
+                cell.updateDOM();
+                let openedCount = 1;
+
+                // Se não houver minas vizinhas próximas, revelamos todos os adjacentes recursivamente
+                if (cell.neighborMines === 0 && !cell.hasMine) {
+                    const neighbors = this.getNeighbors(row, col);
+                    neighbors.forEach(neighbor => {
+                        openedCount += this.revealCellRecursive(neighbor.row, neighbor.col);
+                    });
+                }
+                return openedCount;
+            }
+
+            // Renderiza fisicamente as células no elemento container do Grid do DOM
+            renderToDOM(container) {
+                container.innerHTML = '';
+                container.style.gridTemplateColumns = `repeat(${this.cols}, 1fr)`;
+
+                for (let r = 0; r < this.rows; r++) {
+                    for (let c = 0; c < this.cols; c++) {
+                        const cellDOM = this.cells[r][c].render(this.onCellClick, this.onCellRightClick);
+                        container.appendChild(cellDOM);
+                    }
+                }
+            }
+
+            // Revela todas as minas do tabuleiro (quando perde)
+            revealAllMines(triggeredCell) {
+                for (let r = 0; r < this.rows; r++) {
+                    for (let c = 0; c < this.cols; c++) {
+                        const cell = this.cells[r][c];
+                        if (cell.hasMine) {
+                            cell.isRevealed = true;
+                            cell.updateDOM();
+                            if (cell === triggeredCell) {
+                                cell.element.classList.add('mine-triggered');
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Verifica se o jogador atingiu a condição de vitória
+            checkVictory() {
+                for (let r = 0; r < this.rows; r++) {
+                    for (let c = 0; c < this.cols; c++) {
+                        const cell = this.cells[r][c];
+                        if (!cell.hasMine && !cell.isRevealed) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+
+        // --- 3. CLASSE GAME (Gerente e Regente Geral do Estado do Jogo) ---
+        class Game {
+            constructor() {
+                this.difficultySettings = {
+                    easy: { rows: 8, cols: 8, mines: 10, cellSize: 42, multiplier: 1, name: 'Fácil' },
+                    medium: { rows: 14, cols: 14, mines: 30, cellSize: 32, multiplier: 2, name: 'Médio' },
+                    hard: { rows: 18, cols: 18, mines: 60, cellSize: 26, multiplier: 3, name: 'Difícil' }
+                };
+
+                this.currentDifficulty = 'easy';
+                this.activeTab = 'easy';
+                this.board = null;
+                this.gameState = 'idle'; // 'idle', 'playing', 'won', 'lost'
+                this.timer = 0;
+                this.timerInterval = null;
+                this.flagsPlaced = 0;
+                this.points = 0; // Pontos na rodada atual
+
+                this.initDOMReferences();
+                this.initEventListeners();
+                this.loadStats();
+                this.renderHighScores();
+                this.renderAbsoluteBest();
+            }
+
+            initDOMReferences() {
+                this.homeScreen = document.getElementById('homeScreen');
+                this.gameScreen = document.getElementById('gameScreen');
+                this.boardContainer = document.getElementById('board');
+                
+                this.minesCounter = document.getElementById('minesCounter');
+                this.pointsCounter = document.getElementById('pointsCounter');
+                this.timerCounter = document.getElementById('timerCounter');
+                this.btnReset = document.getElementById('btnReset');
+                this.smileyIcon = document.getElementById('smileyIcon');
+                this.btnBack = document.getElementById('btnBack');
+                this.btnSoundToggle = document.getElementById('btnSoundToggle');
+                this.btnShowResults = document.getElementById('btnShowResults');
+                
+                // Modal
+                this.modalOverlay = document.getElementById('modalOverlay');
+                this.modalIcon = document.getElementById('modalIcon');
+                this.modalTitle = document.getElementById('modalTitle');
+                this.modalDesc = document.getElementById('modalDesc');
+                this.modalStatTime = document.getElementById('modalStatTime');
+                this.modalStatPoints = document.getElementById('modalStatPoints');
+                this.modalStatBest = document.getElementById('modalStatBest');
+                this.btnModalAction = document.getElementById('btnModalAction');
+                this.btnViewBoard = document.getElementById('btnViewBoard');
+
+                // Stats Home & Leaderboard
+                this.statWins = document.getElementById('statWins');
+                this.statTotalPoints = document.getElementById('statTotalPoints');
+                this.recordsContainer = document.getElementById('recordsContainer');
+                this.tabButtons = document.querySelectorAll('.tab-btn');
+
+                // Absolute Best Card references
+                this.bestRecordScore = document.getElementById('bestRecordScore');
+                this.bestRecordMeta = document.getElementById('bestRecordMeta');
+                this.bestRecordDiff = document.getElementById('bestRecordDiff');
+                this.bestRecordTime = document.getElementById('bestRecordTime');
+                this.bestRecordDate = document.getElementById('bestRecordDate');
+            }
+
+            initEventListeners() {
+                // Seleção de dificuldade na tela inicial
+                const diffButtons = document.querySelectorAll('.btn-difficulty');
+                diffButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.currentDifficulty = btn.dataset.difficulty;
+                        this.startGame();
+                    });
+                });
+
+                // Abas do Painel de Líderes
+                this.tabButtons.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        this.tabButtons.forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        this.activeTab = tab.dataset.tab;
+                        this.renderHighScores();
+                    });
+                });
+
+                // Controles de jogo
+                this.btnReset.addEventListener('click', () => {
+                    this.smileyIcon.style.transform = 'rotate(-360deg)';
+                    setTimeout(() => {
+                        this.smileyIcon.style.transform = '';
+                    }, 400);
+                    this.startGame();
+                });
+                this.btnBack.addEventListener('click', () => this.showHomeScreen());
+                this.btnModalAction.addEventListener('click', () => {
+                    this.hideModal();
+                    this.startGame();
+                });
+
+                // Botão "Ver Campo" para fechar temporariamente o modal pós fim de jogo
+                this.btnViewBoard.addEventListener('click', () => {
+                    this.hideModal();
+                    this.btnShowResults.style.display = 'flex'; // Exibe o atalho para reabrir resultados
+                });
+
+                // Reabrir modal de resultados
+                this.btnShowResults.addEventListener('click', () => {
+                    this.showModal();
+                });
+
+                // Toggle do som
+                this.btnSoundToggle.addEventListener('click', () => {
+                    sound.enabled = !sound.enabled;
+                    this.updateSoundButtonUI();
+                });
+            }
+
+            // Inicia e carrega uma nova partida de acordo com a dificuldade
+            startGame() {
+                this.gameState = 'playing';
+                this.timer = 0;
+                this.flagsPlaced = 0;
+                this.points = 0;
+                
+                this.btnReset.className = 'btn-smiley playing';
+                this.btnShowResults.style.display = 'none'; // Esconde botão de retorno de resultados
+                this.boardContainer.classList.remove('game-over'); // Habilita hovers e cliques de volta
+
+                this.stopTimer();
+                this.updateTimerDisplay();
+                this.updatePointsDisplay();
+
+                const config = this.difficultySettings[this.currentDifficulty];
+                
+                // Instancia o Board passando funções de callback para eventos das células
+                this.board = new Board(
+                    config.rows, 
+                    config.cols, 
+                    config.mines,
+                    config.cellSize,
+                    (cell) => this.handleCellClick(cell),
+                    (cell) => this.handleCellRightClick(cell)
+                );
+
+                this.board.renderToDOM(this.boardContainer);
+                this.updateMinesDisplay();
+
+                // Navegação de telas
+                this.homeScreen.classList.remove('active');
+                this.gameScreen.classList.add('active');
+                this.hideModal();
+            }
+
+            showHomeScreen() {
+                this.stopTimer();
+                this.homeScreen.classList.add('active');
+                this.gameScreen.classList.remove('active');
+                this.hideModal();
+                this.loadStats();
+                this.renderHighScores();
+                this.renderAbsoluteBest();
+            }
+
+            // Gerencia clique esquerdo (Revelar)
+            handleCellClick(cell) {
+                if (this.gameState !== 'playing' || cell.isRevealed || cell.isFlagged) return;
+
+                // --- REGRA DO 1º CLIQUE ---
+                if (!this.board.minesPlaced) {
+                    // Posiciona as bombas protegendo a célula clicada e seus vizinhos
+                    this.board.placeMines(cell.row, cell.col);
+                    
+                    // Revela apenas a célula clicada de forma isolada, sem cascatear
+                    cell.isRevealed = true;
+                    cell.updateDOM();
+                    
+                    // Concede pontos iniciais pelo primeiro clique seguro
+                    const config = this.difficultySettings[this.currentDifficulty];
+                    this.points += 10 * config.multiplier;
+                    this.updatePointsDisplay();
+                    
+                    sound.play('reveal-empty');
+                    return; // Sai antes para não rodar recursão nem iniciar cronômetro ainda
+                }
+
+                // --- SEGUNDO CLIQUE EM DIANTE ---
+                // O cronômetro do jogo de fato começa a partir do segundo clique
+                if (!this.timerInterval) {
+                    this.startTimer();
+                }
+
+                if (cell.hasMine) {
+                    this.handleGameOver(cell);
+                } else {
+                    const openedCount = this.board.revealCellRecursive(cell.row, cell.col);
+                    
+                    // Contagem de pontos normal
+                    const config = this.difficultySettings[this.currentDifficulty];
+                    this.points += openedCount * 10 * config.multiplier;
+                    this.updatePointsDisplay();
+
+                    sound.play('reveal-empty');
+
+                    if (this.board.checkVictory()) {
+                        this.handleVictory();
+                    }
+                }
+            }
+
+            // Gerencia clique direito ou toque longo (Bandeiras)
+            handleCellRightClick(cell) {
+                if (this.gameState !== 'playing' || cell.isRevealed) return;
+
+                // Regra: as bandeiras só podem ser colocadas depois do primeiro clique esquerdo (bombas assentadas)
+                if (!this.board.minesPlaced) return;
+
+                cell.isFlagged = !cell.isFlagged;
+                this.flagsPlaced += cell.isFlagged ? 1 : -1;
+                
+                sound.play('flag');
+                cell.updateDOM();
+                this.updateMinesDisplay();
+            }
+
+            // Vitória
+            handleVictory() {
+                this.gameState = 'won';
+                this.stopTimer();
+                this.btnReset.className = 'btn-smiley won';
+                this.boardContainer.classList.add('game-over'); // Desativa hovers e cliques imediatamente
+                sound.play('win');
+
+                // Bônus de vitória baseado no tempo
+                const config = this.difficultySettings[this.currentDifficulty];
+                const speedBonus = Math.max(50, 600 - this.timer);
+                const victoryBonus = (1000 * config.multiplier) + speedBonus;
+                this.points += victoryBonus;
+                this.updatePointsDisplay();
+
+                this.saveWinStats(true);
+
+                // Detalhes do modal
+                this.modalIcon.className = 'modal-icon victory';
+                this.modalIcon.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+                this.modalTitle.textContent = 'Você Venceu!';
+                this.modalDesc.textContent = 'Parabéns! Você encontrou todas as minas com segurança.';
+                this.modalStatTime.textContent = `${this.timer}s`;
+                this.modalStatPoints.textContent = `+${this.points}`;
+                
+                const highScore = localStorage.getItem(`high_score_${this.currentDifficulty}`) || this.points;
+                this.modalStatBest.textContent = `${highScore} pts`;
+
+                setTimeout(() => this.showModal(), 600);
+            }
+
+            // Derrota
+            handleGameOver(triggeredCell) {
+                this.gameState = 'lost';
+                this.stopTimer();
+                this.btnReset.className = 'btn-smiley lost';
+                this.boardContainer.classList.add('game-over'); // Desativa hovers e cliques imediatamente
+                sound.play('explode');
+
+                // Revela as minas de forma segura
+                this.board.revealAllMines(triggeredCell);
+
+                this.saveWinStats(false);
+
+                // Detalhes do modal de derrota
+                this.modalIcon.className = 'modal-icon defeat';
+                this.modalIcon.innerHTML = '<i class="fa-solid fa-bomb"></i>';
+                this.modalTitle.textContent = 'Fim de Jogo!';
+                this.modalDesc.textContent = 'Que pena! Você acabou pisando em uma mina ativa.';
+                this.modalStatTime.textContent = `${this.timer}s`;
+                this.modalStatPoints.textContent = `${this.points}`;
+                
+                const highScore = localStorage.getItem(`high_score_${this.currentDifficulty}`) || '--';
+                this.modalStatBest.textContent = highScore !== '--' ? `${highScore} pts` : '--';
+
+                setTimeout(() => this.showModal(), 1000);
+            }
+
+            // Timer do HUD
+            startTimer() {
+                if (this.timerInterval) return;
+                this.timerInterval = setInterval(() => {
+                    this.timer++;
+                    if (this.timer > 999) this.timer = 999; 
+                    this.updateTimerDisplay();
+                }, 1000);
+            }
+
+            stopTimer() {
+                clearInterval(this.timerInterval);
+                this.timerInterval = null;
+            }
+
+            updateTimerDisplay() {
+                this.timerCounter.textContent = String(this.timer).padStart(3, '0');
+            }
+
+            updatePointsDisplay() {
+                this.pointsCounter.textContent = String(this.points).padStart(4, '0');
+            }
+
+            updateMinesDisplay() {
+                const config = this.difficultySettings[this.currentDifficulty];
+                const minesLeft = config.mines - this.flagsPlaced;
+                const formatted = minesLeft >= 0 
+                    ? String(minesLeft).padStart(3, '0') 
+                    : '-' + String(Math.abs(minesLeft)).padStart(2, '0');
+                
+                this.minesCounter.textContent = formatted;
+            }
+
+            // Persistência local de dados (Estatísticas, Recordes e Pontos Acumulados)
+            loadStats() {
+                const wins = localStorage.getItem('total_wins') || '0';
+                this.statWins.textContent = wins;
+
+                const totalPoints = localStorage.getItem('total_points') || '0';
+                this.statTotalPoints.textContent = totalPoints;
+            }
+
+            // Retorna todas as jogadas salvas no histórico
+            getAllPlays() {
+                const data = localStorage.getItem('all_game_plays');
+                return data ? JSON.parse(data) : [];
+            }
+
+            // Salva estatísticas gerais e registra no histórico de partidas completo
+            saveWinStats(isWin) {
+                // Registrar a jogada no histórico geral de partidas
+                const plays = this.getAllPlays();
+                const newPlay = {
+                    id: Date.now(),
+                    difficulty: this.currentDifficulty,
+                    won: isWin,
+                    time: this.timer,
+                    points: this.points,
+                    date: new Date().toLocaleDateString('pt-BR')
+                };
+                plays.unshift(newPlay); // Adiciona no início (mais recente primeiro)
+                localStorage.setItem('all_game_plays', JSON.stringify(plays));
+
+                if (isWin) {
+                    // Incrementa número de vitórias totais
+                    let wins = parseInt(localStorage.getItem('total_wins') || '0', 10);
+                    wins++;
+                    localStorage.setItem('total_wins', wins);
+
+                    // Recorde de pontuação alta para a dificuldade selecionada
+                    const highScoreKey = `high_score_${this.currentDifficulty}`;
+                    const currentHighScore = parseInt(localStorage.getItem(highScoreKey) || '0', 10);
+                    if (this.points > currentHighScore) {
+                        localStorage.setItem(highScoreKey, this.points);
+                    }
+                }
+
+                // Adiciona pontos ao total acumulado do perfil do jogador (mesmo em derrotas!)
+                let totalPoints = parseInt(localStorage.getItem('total_points') || '0', 10);
+                totalPoints += this.points;
+                localStorage.setItem('total_points', totalPoints);
+            }
+
+            // Procura e renderiza a melhor jogada absoluta de todas as registradas no histórico
+            renderAbsoluteBest() {
+                const plays = this.getAllPlays();
+                // A melhor jogada absoluta é aquela com vitória que gerou mais pontos
+                const wins = plays.filter(p => p.won);
+                
+                if (wins.length === 0) {
+                    this.bestRecordScore.textContent = "Nenhum recorde absoluto ainda";
+                    this.bestRecordMeta.style.display = "none";
+                    return;
+                }
+
+                // Ordena por pontos de forma decrescente
+                wins.sort((a, b) => b.points - a.points);
+                const bestRun = wins[0];
+
+                this.bestRecordScore.textContent = `${bestRun.points} Pontos`;
+                this.bestRecordDiff.textContent = this.difficultySettings[bestRun.difficulty].name;
+                this.bestRecordTime.textContent = `${bestRun.time}s`;
+                this.bestRecordDate.textContent = bestRun.date;
+                this.bestRecordMeta.style.display = "flex";
+            }
+
+            // Desenha a lista de líderes ou o histórico de partidas na tela inicial
+            renderHighScores() {
+                this.recordsContainer.innerHTML = '';
+
+                // Se a aba selecionada for o Histórico Completo de todas as partidas
+                if (this.activeTab === 'history') {
+                    const plays = this.getAllPlays();
+                    if (plays.length === 0) {
+                        this.recordsContainer.innerHTML = '<div class="no-records">Você ainda não jogou nenhuma partida. Escolha um nível!</div>';
+                        return;
+                    }
+
+                    plays.forEach(play => {
+                        const row = document.createElement('div');
+                        row.classList.add('record-row');
+
+                        const diffName = this.difficultySettings[play.difficulty].name;
+                        const statusClass = play.won ? 'status-win' : 'status-lose';
+                        const statusText = play.won ? 'Vitória' : 'Derrota';
+
+                        row.innerHTML = `
+                            <div class="history-meta">
+                                <span class="hist-status-badge ${statusClass}">${statusText}</span>
+                                <span class="hist-diff-badge">${diffName}</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary); font-family: var(--font-mono);">${play.date}</span>
+                            </div>
+                            <div class="record-time" style="color: ${play.won ? '#34d399' : '#f87171'}">
+                                ${play.points} pts <span style="color: var(--text-secondary); font-size: 0.8rem; font-weight: normal;">(${play.time}s)</span>
+                            </div>
+                        `;
+                        this.recordsContainer.appendChild(row);
+                    });
+                    return;
+                }
+
+                // --- TAB CONVENCIONAL (FÁCIL, MÉDIO, DIFÍCIL) ---
+                // Agora calcula as Melhores Jogadas do Histórico de cada nível diretamente!
+                const plays = this.getAllPlays();
+                const levelWins = plays.filter(p => p.difficulty === this.activeTab && p.won);
+
+                if (levelWins.length === 0) {
+                    this.recordsContainer.innerHTML = '<div class="no-records">Nenhum recorde neste nível registrado no histórico ainda. Complete uma partida!</div>';
+                    return;
+                }
+
+                // Ordena por pontos em ordem decrescente (as melhores jogadas históricas do nível)
+                levelWins.sort((a, b) => b.points - a.points);
+                const topThree = levelWins.slice(0, 3);
+
+                topThree.forEach((play, index) => {
+                    const row = document.createElement('div');
+                    row.classList.add('record-row');
+
+                    let medalClass = '';
+                    if (index === 0) medalClass = 'rank-1';
+                    else if (index === 1) medalClass = 'rank-2';
+                    else if (index === 2) medalClass = 'rank-3';
+
+                    row.innerHTML = `
+                        <div class="record-rank ${medalClass}">
+                            <i class="fa-solid fa-medal"></i> ${index + 1}º Lugar
+                        </div>
+                        <div class="record-time">
+                            ${play.points} pts <span style="color: var(--text-secondary); font-weight: normal; font-size: 0.85rem;">(${play.time}s)</span>
+                        </div>
+                    `;
+                    this.recordsContainer.appendChild(row);
+                });
+            }
+
+            // Controles de Modal Overlay
+            showModal() {
+                this.modalOverlay.classList.add('active');
+                this.btnShowResults.style.display = 'none'; // Oculta botão de atalho enquanto modal está aberto
+            }
+
+            hideModal() {
+                this.modalOverlay.classList.remove('active');
+            }
+
+            updateSoundButtonUI() {
+                const icon = this.btnSoundToggle.querySelector('i');
+                if (sound.enabled) {
+                    icon.className = 'fa-solid fa-volume-high';
+                    this.btnSoundToggle.style.opacity = '1';
+                } else {
+                    icon.className = 'fa-solid fa-volume-xmark';
+                    this.btnSoundToggle.style.opacity = '0.6';
+                }
+            }
+        }
+
+        // Inicializa o jogo ao carregar a página
+        window.addEventListener('DOMContentLoaded', () => {
+            window.gameInstance = new Game();
+        });
+    </script>
+</body>
+</html>
